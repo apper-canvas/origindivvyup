@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { toast } from 'react-toastify';
 import ApperIcon from './ApperIcon';
@@ -87,6 +87,11 @@ const initialBalances = calculateBalances(initialExpenses);
 
 const MainFeature = ({ externalGroups, setExternalGroups, externalActiveGroupId, setExternalActiveGroupId }) => {
   const [activeGroupId, setActiveGroupId] = useState(initialGroups[0]?.id || '');
+  
+  // Use refs to track previous values for comparison
+  const prevExternalGroupsRef = useRef(null);
+  const prevExternalActiveGroupIdRef = useRef(null);
+  
   const [groups, setGroups] = useState(initialGroups);
   const [expenses, setExpenses] = useState(initialExpenses);
   const [balances, setBalances] = useState(initialBalances);
@@ -111,44 +116,50 @@ const MainFeature = ({ externalGroups, setExternalGroups, externalActiveGroupId,
   
   const [showAddExpenseForm, setShowAddExpenseForm] = useState(false);
 
-  // Sync with external group state if provided
-  // Consolidated bidirectional sync in a single useEffect to prevent circular updates
+  // Handle incoming external state changes (parent to child sync)
   useEffect(() => {
-    // Handle incoming external groups (parent to child sync)
-    const externalGroupsChanged = externalGroups && 
-      JSON.stringify(externalGroups) !== JSON.stringify(groups) && 
-      externalGroups.length > 0;
-    
-    if (externalGroupsChanged) {
-      setGroups(externalGroups);
+    // Only update if externalGroups exists and has changed from previous external value
+    if (externalGroups && externalGroups.length > 0) {
+      const externalGroupsJson = JSON.stringify(externalGroups);
+      const prevExternalGroupsJson = JSON.stringify(prevExternalGroupsRef.current);
+      
+      if (externalGroupsJson !== prevExternalGroupsJson) {
+        setGroups(externalGroups);
+        prevExternalGroupsRef.current = externalGroups;
+      }
     }
-    
-    // Handle incoming external active group ID (parent to child sync)
-    const externalActiveIdChanged = externalActiveGroupId && 
-      externalActiveGroupId !== activeGroupId;
-    
-    if (externalActiveIdChanged) {
-      setActiveGroupId(externalActiveGroupId);
+  }, [externalGroups]);
+
+  // Handle incoming external active group ID changes
+  useEffect(() => {
+    if (externalActiveGroupId && externalActiveGroupId !== prevExternalActiveGroupIdRef.current) {
+      if (externalActiveGroupId !== activeGroupId) {
+        setActiveGroupId(externalActiveGroupId);
+      }
+      prevExternalActiveGroupIdRef.current = externalActiveGroupId;
     }
-    
-    // Handle outgoing groups update (child to parent sync)
-    const groupsChangedOutgoing = setExternalGroups && 
-      groups.length > 0 && 
-      (!externalGroups || JSON.stringify(groups) !== JSON.stringify(externalGroups));
-    
-    if (groupsChangedOutgoing) {
+  }, [externalActiveGroupId, activeGroupId]);
+
+  // Handle outgoing groups updates (child to parent sync)
+  useEffect(() => {
+    if (setExternalGroups && groups.length > 0) {
+      const groupsJson = JSON.stringify(groups);
+      const externalGroupsJson = JSON.stringify(externalGroups);
+      
+      if (externalGroupsJson !== groupsJson) {
       setExternalGroups([...groups]);
+      }
     }
-    
-    // Handle outgoing active group ID update (child to parent sync)
-    const activeGroupChangedOutgoing = setExternalActiveGroupId && 
-      activeGroupId && 
-      activeGroupId !== externalActiveGroupId;
-    
-    if (activeGroupChangedOutgoing) {
+  }, [groups, setExternalGroups, externalGroups]);
+
+  // Handle outgoing active group ID updates
+  useEffect(() => {
+    if (setExternalActiveGroupId && activeGroupId) {
+      if (activeGroupId !== externalActiveGroupId) {
       setExternalActiveGroupId(activeGroupId);
+      }
     }
-  }, [groups, activeGroupId, setExternalGroups, setExternalActiveGroupId, externalGroups, externalActiveGroupId]);
+  }, [activeGroupId, setExternalActiveGroupId, externalActiveGroupId]);
   
   // Get active group
   const activeGroup = groups.find(g => g.id === activeGroupId) || groups[0] || {};
