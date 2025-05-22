@@ -2,6 +2,7 @@ import { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import ApperIcon from '../components/ApperIcon';
 import MainFeature from '../components/MainFeature';
+import ActivityFeed from '../components/ActivityFeed';
 
 const Home = () => {
   const [showOnboarding, setShowOnboarding] = useState(true);
@@ -127,6 +128,13 @@ const Home = () => {
             <main className="py-6">
               <div className="container mx-auto px-4 sm:px-6 lg:px-8">
                 <MainFeature />
+                
+                {/* Activity Feed Section */}
+                <div className="max-w-5xl mx-auto mt-8">
+                  <h2 className="text-2xl font-bold mb-4">Recent Activity</h2>
+                  <p className="text-surface-600 dark:text-surface-400 mb-6">Stay updated with all expense activities across your groups.</p>
+                  <ActivityFeed />
+                </div>
               </div>
             </main>
           </motion.div>
