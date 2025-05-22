@@ -1,11 +1,13 @@
 import { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { format, formatDistanceToNow } from 'date-fns';
+import { format, formatDistanceToNow, isAfter, isBefore, parseISO } from 'date-fns';
 import ApperIcon from './ApperIcon';
+import FilterBar from './FilterBar';
 
 // Sample activity data for demo purposes
 const initialActivities = [
   {
+    id: 'a1',
     id: 'a1',
     type: 'expense',
     date: new Date(2023, 9, 26, 19, 30), // Oct 26, 2023, 7:30 PM
@@ -18,6 +20,7 @@ const initialActivities = [
   {
     id: 'a2',
     type: 'payment',
+    date: new Date(2023, 9, 27, 10, 15), // Oct 27, 2023, 10:15 AM
     date: new Date(2023, 9, 27, 10, 15), // Oct 27, 2023, 10:15 AM
     user: 'John',
     description: 'paid',
@@ -81,10 +84,27 @@ const initialActivities = [
 const ActivityFeed = () => {
   const [activities] = useState(initialActivities);
   const [filter, setFilter] = useState('all');
+  const [filters, setFilters] = useState({
+    startDate: '',
+    endDate: '',
+    searchTerm: ''
+  });
 
-  // Filter activities based on selected filter
+  // Filter activities based on all filter criteria
   const filteredActivities = activities.filter(activity => {
-    if (filter === 'all') return true;
+    // Type filter
+    if (filter !== 'all' && activity.type !== filter) return false;
+    
+    // Date range filter
+    if (filters.startDate && isBefore(activity.date, new Date(filters.startDate))) return false;
+    if (filters.endDate && isAfter(activity.date, new Date(`${filters.endDate}T23:59:59`))) return false;
+    
+    // Search term filter
+    if (filters.searchTerm) {
+      const searchLower = filters.searchTerm.toLowerCase();
+      const activityText = `${activity.user} ${activity.description} ${activity.to || ''} ${activity.group}`.toLowerCase();
+      if (!activityText.includes(searchLower)) return false;
+    }
     return activity.type === filter;
   });
 
@@ -107,12 +127,22 @@ const ActivityFeed = () => {
       default: return 'bg-surface-400';
     }
   };
+  
+  // Handle filter changes
+  const handleFilterChange = (newFilters) => {
+    setFilters(newFilters);
+  };
+  
+  // Get unique categories for filter dropdown
+  const uniqueGroups = [...new Set(activities.map(activity => activity.group))];
 
   return (
     <div className="card">
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-6">
         <h2 className="text-xl font-bold">Activity Feed</h2>
         
+      </div>
+      
         {/* Filter buttons */}
         <div className="flex flex-wrap gap-2">
           <button
@@ -156,7 +186,18 @@ const ActivityFeed = () => {
             Settlements
           </button>
         </div>
-      </div>
+      
+      {/* Advanced filtering */}
+      <FilterBar 
+        onFilterChange={handleFilterChange}
+        categories={uniqueGroups}
+        showCategoryFilter={false}
+        activeFilters={filters}
+      />
+      
+      {filteredActivities.length === 0 && (
+        <p className="text-center text-surface-500 dark:text-surface-400 my-4">No activities match your filter criteria.</p>
+      )}
       
       {/* Activity list */}
       <div className="activity-timeline relative pl-6 border-l border-surface-200 dark:border-surface-700 space-y-6">

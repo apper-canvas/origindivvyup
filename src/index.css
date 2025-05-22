@@ -66,6 +66,13 @@
 }
 
 @layer components {
+  .filter-pill {
+    @apply flex items-center gap-1 px-2 py-1 text-xs bg-surface-100 dark:bg-surface-800 rounded-full;
+  }
+}
+
+
+@layer components {
   .activity-timeline .activity-dot {
     @apply absolute -left-2.5 w-5 h-5 rounded-full border-4 border-white dark:border-surface-800;
   }

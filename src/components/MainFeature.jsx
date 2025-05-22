@@ -3,6 +3,7 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { toast } from 'react-toastify';
 import ApperIcon from './ApperIcon';
 import { format } from 'date-fns';
+import FilterBar from './FilterBar';
 
 // Sample data for demo purposes
 const initialGroups = [
@@ -89,6 +90,13 @@ const MainFeature = () => {
   const [groups, setGroups] = useState(initialGroups);
   const [expenses, setExpenses] = useState(initialExpenses);
   const [balances, setBalances] = useState(initialBalances);
+  const [expenseFilters, setExpenseFilters] = useState({
+    startDate: '',
+    endDate: '',
+    category: '',
+    searchTerm: '',
+  });
+  
   const [view, setView] = useState('expenses'); // 'expenses' or 'balances'
   
   // Form state for adding new expense
@@ -106,8 +114,27 @@ const MainFeature = () => {
   // Get active group
   const activeGroup = groups.find(g => g.id === activeGroupId) || groups[0] || {};
   
-  // Get expenses for active group
-  const groupExpenses = expenses.filter(e => e.groupId === activeGroupId);
+  // Get expenses for active group with filters
+  const groupExpenses = expenses.filter(e => {
+    // Base filter - group membership
+    if (e.groupId !== activeGroupId) return false;
+    
+    // Date filters
+    if (expenseFilters.startDate && new Date(e.date) < new Date(expenseFilters.startDate)) return false;
+    if (expenseFilters.endDate && new Date(e.date) > new Date(`${expenseFilters.endDate}T23:59:59`)) return false;
+    
+    // Category filter
+    if (expenseFilters.category && e.category !== expenseFilters.category) return false;
+    
+    // Search filter
+    if (expenseFilters.searchTerm) {
+      const searchLower = expenseFilters.searchTerm.toLowerCase();
+      const expenseText = `${e.description} ${e.paidBy} ${e.category}`.toLowerCase();
+      if (!expenseText.includes(searchLower)) return false;
+    }
+    
+    return true;
+  });
 
   // Update balances when expenses change
   useEffect(() => {
@@ -173,6 +200,11 @@ const MainFeature = () => {
     // Show success message
     toast.success('Expense added successfully');
   };
+  
+  // Handle expense filters change
+  const handleExpenseFilterChange = (newFilters) => {
+    setExpenseFilters(newFilters);
+  };
 
   // Get balances for active group
   const groupBalances = balances[activeGroupId] || {};
@@ -223,6 +255,16 @@ const MainFeature = () => {
   };
   
   const settlementPlan = generateSettlementPlan();
+  
+  // Get unique categories for the filter dropdown
+  const uniqueCategories = [...new Set(
+    expenses
+      .filter(e => e.groupId === activeGroupId)
+      .map(e => e.category)
+  )];
+  
+  // Check if there are any active filters
+  const hasActiveFilters = Object.values(expenseFilters).some(val => val !== '');
 
   return (
     <div className="max-w-5xl mx-auto">
@@ -311,6 +353,15 @@ const MainFeature = () => {
           </div>
 
           {/* Add Expense Form */}
+          {!showAddExpenseForm && (
+            <FilterBar 
+              onFilterChange={handleExpenseFilterChange}
+              categories={uniqueCategories}
+              activeFilters={expenseFilters}
+              showDateFilter={true}
+              showCategoryFilter={true}
+            />
+          )}
           <AnimatePresence>
             {showAddExpenseForm && (
               <motion.div
@@ -433,7 +484,15 @@ const MainFeature = () => {
             {groupExpenses.length === 0 ? (
               <div className="card text-center py-8">
                 <ApperIcon name="ReceiptText" className="h-12 w-12 mx-auto text-surface-400 mb-4" />
-                <h3 className="text-lg font-medium mb-2">No expenses yet</h3>
+                <h3 className="text-lg font-medium mb-2">
+                  {hasActiveFilters 
+                    ? "No expenses match your filter criteria" 
+                    : "No expenses yet"
+                  }
+                </h3>
+                {hasActiveFilters && (
+                  <button onClick={() => setExpenseFilters({startDate: '', endDate: '', category: '', searchTerm: ''})} className="text-primary mb-4">Clear all filters</button>
+                )}
                 <p className="text-surface-500 dark:text-surface-400 mb-4">
                   Add your first expense to start tracking
                 </p>
