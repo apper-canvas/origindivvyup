@@ -113,12 +113,16 @@ const MainFeature = ({ externalGroups, setExternalGroups, externalActiveGroupId,
 
   // Sync with external group state if provided
   useEffect(() => {
-    if (externalGroups) setGroups(externalGroups);
+    if (externalGroups && JSON.stringify(externalGroups) !== JSON.stringify(groups)) {
+      setGroups(externalGroups);
+    }
   }, [externalGroups]);
   
   useEffect(() => {
-    if (externalActiveGroupId) setActiveGroupId(externalActiveGroupId);
-  }, [externalActiveGroupId]);
+    if (externalActiveGroupId && externalActiveGroupId !== activeGroupId) {
+      setActiveGroupId(externalActiveGroupId);
+    }
+  }, [externalActiveGroupId, activeGroupId]);
   
   // Get active group
   const activeGroup = groups.find(g => g.id === activeGroupId) || groups[0] || {};
@@ -152,9 +156,14 @@ const MainFeature = ({ externalGroups, setExternalGroups, externalActiveGroupId,
   
   // Sync back to parent component
   useEffect(() => {
-    if (setExternalGroups) setExternalGroups(groups);
-    if (setExternalActiveGroupId) setExternalActiveGroupId(activeGroupId);
-  }, [groups, activeGroupId, setExternalGroups, setExternalActiveGroupId]);
+    // Only sync back if the values have changed and callbacks exist
+    if (setExternalGroups && JSON.stringify(externalGroups) !== JSON.stringify(groups)) {
+      setExternalGroups(groups);
+    }
+    if (setExternalActiveGroupId && externalActiveGroupId !== activeGroupId) {
+      setExternalActiveGroupId(activeGroupId);
+    }
+  }, [groups, activeGroupId, setExternalGroups, setExternalActiveGroupId, externalGroups, externalActiveGroupId]);
 
   // Handle form input changes
   const handleInputChange = (e) => {
