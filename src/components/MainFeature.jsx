@@ -112,19 +112,43 @@ const MainFeature = ({ externalGroups, setExternalGroups, externalActiveGroupId,
   const [showAddExpenseForm, setShowAddExpenseForm] = useState(false);
 
   // Sync with external group state if provided
+  // Consolidated bidirectional sync in a single useEffect to prevent circular updates
   useEffect(() => {
-    if (externalGroups && externalGroups.length > 0 && JSON.stringify(externalGroups) !== JSON.stringify(groups)) {
+    // Handle incoming external groups (parent to child sync)
+    const externalGroupsChanged = externalGroups && 
+      JSON.stringify(externalGroups) !== JSON.stringify(groups) && 
+      externalGroups.length > 0;
+    
+    if (externalGroupsChanged) {
       setGroups(externalGroups);
     }
-  }, [externalGroups, groups]);
-  
-  useEffect(() => {
-    // Only update if the external ID exists and differs from current active ID
-    if (externalActiveGroupId && externalActiveGroupId !== activeGroupId) {
+    
+    // Handle incoming external active group ID (parent to child sync)
+    const externalActiveIdChanged = externalActiveGroupId && 
+      externalActiveGroupId !== activeGroupId;
+    
+    if (externalActiveIdChanged) {
       setActiveGroupId(externalActiveGroupId);
     }
-  }, [externalActiveGroupId]);
-  
+    
+    // Handle outgoing groups update (child to parent sync)
+    const groupsChangedOutgoing = setExternalGroups && 
+      groups.length > 0 && 
+      (!externalGroups || JSON.stringify(groups) !== JSON.stringify(externalGroups));
+    
+    if (groupsChangedOutgoing) {
+      setExternalGroups([...groups]);
+    }
+    
+    // Handle outgoing active group ID update (child to parent sync)
+    const activeGroupChangedOutgoing = setExternalActiveGroupId && 
+      activeGroupId && 
+      activeGroupId !== externalActiveGroupId;
+    
+    if (activeGroupChangedOutgoing) {
+      setExternalActiveGroupId(activeGroupId);
+    }
+  }, [groups, activeGroupId, setExternalGroups, setExternalActiveGroupId, externalGroups, externalActiveGroupId]);
   
   // Get active group
   const activeGroup = groups.find(g => g.id === activeGroupId) || groups[0] || {};
@@ -155,21 +179,6 @@ const MainFeature = ({ externalGroups, setExternalGroups, externalActiveGroupId,
   useEffect(() => {
     setBalances(calculateBalances(expenses));
   }, [expenses]);
-  
-  // Sync back to parent component
-  useEffect(() => {
-    // Only sync back if the values have changed and callbacks exist
-    const groupsChanged = JSON.stringify(externalGroups) !== JSON.stringify(groups);
-    const activeGroupChanged = externalActiveGroupId !== activeGroupId;
-    
-    if (setExternalGroups && groupsChanged && groups.length > 0) {
-      setExternalGroups([...groups]);
-    }
-    
-    if (setExternalActiveGroupId && activeGroupChanged && activeGroupId) {
-      setExternalActiveGroupId(activeGroupId);
-    }
-  }, [groups, activeGroupId, setExternalGroups, setExternalActiveGroupId, externalGroups, externalActiveGroupId]);
 
   // Handle form input changes
   const handleInputChange = (e) => {
