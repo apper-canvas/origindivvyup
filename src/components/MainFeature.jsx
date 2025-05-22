@@ -85,7 +85,7 @@ const calculateBalances = (expenses) => {
 
 const initialBalances = calculateBalances(initialExpenses);
 
-const MainFeature = () => {
+const MainFeature = ({ externalGroups, setExternalGroups, externalActiveGroupId, setExternalActiveGroupId }) => {
   const [activeGroupId, setActiveGroupId] = useState(initialGroups[0]?.id || '');
   const [groups, setGroups] = useState(initialGroups);
   const [expenses, setExpenses] = useState(initialExpenses);
@@ -111,6 +111,15 @@ const MainFeature = () => {
   
   const [showAddExpenseForm, setShowAddExpenseForm] = useState(false);
 
+  // Sync with external group state if provided
+  useEffect(() => {
+    if (externalGroups) setGroups(externalGroups);
+  }, [externalGroups]);
+  
+  useEffect(() => {
+    if (externalActiveGroupId) setActiveGroupId(externalActiveGroupId);
+  }, [externalActiveGroupId]);
+  
   // Get active group
   const activeGroup = groups.find(g => g.id === activeGroupId) || groups[0] || {};
   
@@ -140,6 +149,12 @@ const MainFeature = () => {
   useEffect(() => {
     setBalances(calculateBalances(expenses));
   }, [expenses]);
+  
+  // Sync back to parent component
+  useEffect(() => {
+    if (setExternalGroups) setExternalGroups(groups);
+    if (setExternalActiveGroupId) setExternalActiveGroupId(activeGroupId);
+  }, [groups, activeGroupId, setExternalGroups, setExternalActiveGroupId]);
 
   // Handle form input changes
   const handleInputChange = (e) => {

@@ -1,15 +1,19 @@
 import { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import ApperIcon from '../components/ApperIcon';
+import GroupsSection from '../components/GroupsSection';
 import MainFeature from '../components/MainFeature';
 import ActivityFeed from '../components/ActivityFeed';
 
 const Home = () => {
   const [showOnboarding, setShowOnboarding] = useState(true);
+  const [groups, setGroups] = useState([]);
+  const [activeGroupId, setActiveGroupId] = useState('');
   
   const startApp = () => {
     setShowOnboarding(false);
   };
+  
 
   return (
     <div className="min-h-screen">
@@ -127,7 +131,19 @@ const Home = () => {
             
             <main className="py-6">
               <div className="container mx-auto px-4 sm:px-6 lg:px-8">
-                <MainFeature />
+                {/* Groups Section */}
+                <div className="max-w-5xl mx-auto">
+                  <h2 className="text-2xl font-bold mb-4">Manage Groups</h2>
+                  <p className="text-surface-600 dark:text-surface-400 mb-6">Create and manage your expense groups to track shared costs.</p>
+                  <GroupsSection 
+                    groups={groups}
+                    setGroups={setGroups}
+                    activeGroupId={activeGroupId}
+                    setActiveGroupId={setActiveGroupId}
+                  />
+                </div>
+                
+                <MainFeature externalGroups={groups} setExternalGroups={setGroups} externalActiveGroupId={activeGroupId} setExternalActiveGroupId={setActiveGroupId} />
                 
                 {/* Activity Feed Section */}
                 <div className="max-w-5xl mx-auto mt-8">

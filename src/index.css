@@ -88,6 +88,17 @@
   .activity-settlement {
     @apply bg-secondary;
   }
+  
+  /* Group card styling */
+  .group-card {
+    @apply bg-white dark:bg-surface-800 rounded-xl shadow-card p-5 flex flex-col cursor-pointer transition-all duration-200;
+    @apply hover:shadow-lg;
+    min-height: 180px;
+  }
+  
+  .group-card.active {
+    @apply border-2 border-primary;
+  }
 }
 
 @layer utilities {
