@@ -159,7 +159,7 @@ const GroupsSection = ({ groups, setGroups, activeGroupId, setActiveGroupId }) =
             key={group.id}
             initial={{ opacity: 0, y: 10 }}
             animate={{ opacity: 1, y: 0 }}
-            className={`group-card ${activeGroupId === group.id ? 'border-2 border-primary' : 'border border-surface-200 dark:border-surface-700'}`}
+            className={`group-card ${activeGroupId === group.id ? 'active' : ''}`}
             onClick={() => setActiveGroupId(group.id)}
           >
             <div className="flex justify-between">
