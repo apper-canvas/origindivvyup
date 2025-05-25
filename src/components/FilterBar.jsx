@@ -6,33 +6,25 @@ import { format } from 'date-fns';
 const FilterBar = ({ 
   onFilterChange, 
   categories = [], 
-  members = [],
   showDateFilter = true,
   showCategoryFilter = true,
   showSearchFilter = true,
   activeFilters = {} 
+}) => {
+  const [isExpanded, setIsExpanded] = useState(false);
   const [localFilters, setLocalFilters] = useState({
     startDate: activeFilters.startDate || '',
     endDate: activeFilters.endDate || '',
     category: activeFilters.category || '',
     searchTerm: activeFilters.searchTerm || '',
-    paidBy: activeFilters.paidBy || '',
   });
-  const [isExpanded, setIsExpanded] = useState(false);
-  const [localFilters, setLocalFilters] = useState({
-    startDate: activeFilters.startDate || '',
-    endDate: activeFilters.endDate || '',
-  const clearAllFilters = () => {
-    const clearedFilters = {
-      startDate: '',
-      endDate: '',
-      category: '',
-      searchTerm: '',
-      paidBy: '',
-    };
-    setLocalFilters(clearedFilters);
-    onFilterChange(clearedFilters);
+
+  const handleFilterChange = (name, value) => {
+    const updatedFilters = { ...localFilters, [name]: value };
+    setLocalFilters(updatedFilters);
+    onFilterChange(updatedFilters);
   };
+
   const clearFilter = (filterName) => {
     const updatedFilters = { ...localFilters, [filterName]: '' };
     setLocalFilters(updatedFilters);
@@ -83,16 +75,9 @@ const FilterBar = ({
             <div className="flex items-center gap-1 px-2 py-1 text-xs bg-surface-100 dark:bg-surface-800 rounded-full">
               <span>From: {format(new Date(localFilters.startDate), 'MMM d, yyyy')}</span>
               <button onClick={() => clearFilter('startDate')} className="text-surface-500 hover:text-surface-700">
-            </div>
-          )}
-          {localFilters.paidBy && (
-            <div className="flex items-center gap-1 px-2 py-1 text-xs bg-surface-100 dark:bg-surface-800 rounded-full">
-              <span>Paid by: {localFilters.paidBy}</span>
-              <button onClick={() => clearFilter('paidBy')} className="text-surface-500 hover:text-surface-700">
                 <ApperIcon name="X" className="h-3 w-3" />
               </button>
             </div>
-          )}
           )}
           {localFilters.endDate && (
             <div className="flex items-center gap-1 px-2 py-1 text-xs bg-surface-100 dark:bg-surface-800 rounded-full">
@@ -118,6 +103,8 @@ const FilterBar = ({
               </button>
             </div>
           )}
+        </div>
+      )}
 
       {/* Expandable filter section */}
       <AnimatePresence>
@@ -127,20 +114,7 @@ const FilterBar = ({
             animate={{ height: 'auto', opacity: 1 }}
             exit={{ height: 0, opacity: 0 }}
             transition={{ duration: 0.2 }}
-              )}
-              {members.length > 0 && (
-                <div>
-                  <label htmlFor="paidBy" className="label">Paid By</label>
-                  <select id="paidBy" value={localFilters.paidBy} onChange={(e) => handleFilterChange('paidBy', e.target.value)} className="input">
-                    <option value="">All Members</option>
-                    {members.map((member, index) => (
-                      <option key={index} value={member}>{member}</option>
-                    ))}
-                  </select>
-                </div>
             className="overflow-hidden bg-surface-50 dark:bg-surface-800 rounded-lg p-4"
-              {showSearchFilter && (
-                <div className={`${(showDateFilter || (showCategoryFilter && categories.length > 0) || members.length > 0) ? 'md:col-span-3' : ''}`}>
           >
             <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4">
               {showDateFilter && (
