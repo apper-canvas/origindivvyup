@@ -114,13 +114,32 @@ const MainFeature = ({ externalGroups, setExternalGroups, externalActiveGroupId,
 
   // Get active group
   const activeGroup = groups.find(g => g.id === activeGroupId) || groups[0] || {};
+  // Sync with external groups when they change
+  useEffect(() => {
+    if (externalGroups && externalGroups.length > 0) {
+      if (JSON.stringify(groups) !== JSON.stringify(externalGroups)) {
+        setGroups(externalGroups);
+      }
+    }
+  }, [externalGroups]);
+  
+  // Sync active group ID with external state
   useEffect(() => {
     if (setExternalActiveGroupId && activeGroupId) {
       if (activeGroupId !== externalActiveGroupId) {
-      setExternalActiveGroupId(activeGroupId);
+        setExternalActiveGroupId(activeGroupId);
       }
     }
   }, [activeGroupId, setExternalActiveGroupId, externalActiveGroupId]);
+  
+  // Sync groups back to external state when local groups change
+  useEffect(() => {
+    if (setExternalGroups && groups.length > 0) {
+      if (JSON.stringify(groups) !== JSON.stringify(externalGroups)) {
+        setExternalGroups(groups);
+      }
+    }
+  }, [groups, setExternalGroups, externalGroups]);
   
   
   // Get expenses for active group with filters
