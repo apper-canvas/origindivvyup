@@ -108,8 +108,7 @@ const MainFeature = ({ externalGroups, setExternalGroups, externalActiveGroupId,
     startDate: '',
     endDate: '',
     category: '',
-    searchTerm: '',
-    paidBy: ''
+    searchTerm: ''
   });
   const [balances, setBalances] = useState(initialBalances);
 
@@ -150,15 +149,10 @@ const MainFeature = ({ externalGroups, setExternalGroups, externalActiveGroupId,
     
     // Date filters
     if (expenseFilters.startDate && new Date(e.date) < new Date(expenseFilters.startDate)) return false;
-    // Search filter
-    if (expenseFilters.searchTerm) {
-      const searchLower = expenseFilters.searchTerm.toLowerCase();
-      const expenseText = `${e.description} ${e.paidBy} ${e.category}`.toLowerCase();
-      if (!expenseText.includes(searchLower)) return false;
-    }
+    if (expenseFilters.endDate && new Date(e.date) > new Date(`${expenseFilters.endDate}T23:59:59`)) return false;
     
-    // Paid by filter
-    if (expenseFilters.paidBy && e.paidBy !== expenseFilters.paidBy) return false;
+    // Category filter
+    if (expenseFilters.category && e.category !== expenseFilters.category) return false;
     
     // Search filter
     if (expenseFilters.searchTerm) {
@@ -375,12 +369,11 @@ const MainFeature = ({ externalGroups, setExternalGroups, externalActiveGroupId,
       {/* Expenses View */}
       {view === 'expenses' && (
         <>
-              categories={uniqueCategories}
-              members={activeGroup.members || []}
-              activeFilters={expenseFilters}
-              showDateFilter={true}
-              showCategoryFilter={true}
-              showPaidByFilter={true}
+          <div className="flex justify-between items-center mb-4">
+            <h2 className="text-xl font-bold">Expenses</h2>
+            <button
+              onClick={() => setShowAddExpenseForm(!showAddExpenseForm)}
+              className="btn btn-primary inline-flex items-center"
             >
               <ApperIcon name={showAddExpenseForm ? "X" : "Plus"} className="h-4 w-4 mr-1" />
               {showAddExpenseForm ? 'Cancel' : 'Add Expense'}
