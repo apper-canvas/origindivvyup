@@ -86,7 +86,6 @@ const calculateBalances = (expenses) => {
 const initialBalances = calculateBalances(initialExpenses);
 
 const MainFeature = ({ externalGroups, setExternalGroups, externalActiveGroupId, setExternalActiveGroupId }) => {
-const MainFeature = ({ externalGroups, setExternalGroups, externalActiveGroupId, setExternalActiveGroupId }) => {
   const [activeGroupId, setActiveGroupId] = useState(
     externalActiveGroupId || initialGroups[0]?.id || ''
   );
@@ -94,6 +93,25 @@ const MainFeature = ({ externalGroups, setExternalGroups, externalActiveGroupId,
     externalGroups && externalGroups.length > 0 ? externalGroups : initialGroups
   );
   
+  const [expenses, setExpenses] = useState(initialExpenses);
+  const [view, setView] = useState('expenses');
+  const [showAddExpenseForm, setShowAddExpenseForm] = useState(false);
+  const [newExpense, setNewExpense] = useState({
+    description: '',
+    amount: '',
+    paidBy: '',
+    date: format(new Date(), 'yyyy-MM-dd'),
+    category: 'Other',
+    splitType: 'equal',
+  });
+  const [expenseFilters, setExpenseFilters] = useState({
+    startDate: '',
+    endDate: '',
+    category: '',
+    searchTerm: ''
+  });
+  const [balances, setBalances] = useState(initialBalances);
+
   // Get active group
   const activeGroup = groups.find(g => g.id === activeGroupId) || groups[0] || {};
   useEffect(() => {
@@ -104,8 +122,6 @@ const MainFeature = ({ externalGroups, setExternalGroups, externalActiveGroupId,
     }
   }, [activeGroupId, setExternalActiveGroupId, externalActiveGroupId]);
   
-  // Get active group
-  const activeGroup = groups.find(g => g.id === activeGroupId) || groups[0] || {};
   
   // Get expenses for active group with filters
   const groupExpenses = expenses.filter(e => {
