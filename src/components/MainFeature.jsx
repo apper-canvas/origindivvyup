@@ -86,73 +86,16 @@ const calculateBalances = (expenses) => {
 const initialBalances = calculateBalances(initialExpenses);
 
 const MainFeature = ({ externalGroups, setExternalGroups, externalActiveGroupId, setExternalActiveGroupId }) => {
-  const [activeGroupId, setActiveGroupId] = useState(initialGroups[0]?.id || '');
+const MainFeature = ({ externalGroups, setExternalGroups, externalActiveGroupId, setExternalActiveGroupId }) => {
+  const [activeGroupId, setActiveGroupId] = useState(
+    externalActiveGroupId || initialGroups[0]?.id || ''
+  );
+  const [groups, setGroups] = useState(
+    externalGroups && externalGroups.length > 0 ? externalGroups : initialGroups
+  );
   
-  // Use refs to track previous values for comparison
-  const prevExternalGroupsRef = useRef(null);
-  const prevExternalActiveGroupIdRef = useRef(null);
-  
-  const [groups, setGroups] = useState(initialGroups);
-  const [expenses, setExpenses] = useState(initialExpenses);
-  const [balances, setBalances] = useState(initialBalances);
-  const [expenseFilters, setExpenseFilters] = useState({
-    startDate: '',
-    endDate: '',
-    category: '',
-    searchTerm: '',
-  });
-  
-  const [view, setView] = useState('expenses'); // 'expenses' or 'balances'
-  
-  // Form state for adding new expense
-  const [newExpense, setNewExpense] = useState({
-    description: '',
-    amount: '',
-    paidBy: '',
-    date: format(new Date(), 'yyyy-MM-dd'),
-    category: 'Other',
-    splitType: 'equal',
-  });
-  
-  const [showAddExpenseForm, setShowAddExpenseForm] = useState(false);
-
-  // Handle incoming external state changes (parent to child sync)
-  useEffect(() => {
-    // Only update if externalGroups exists and has changed from previous external value
-    if (externalGroups && externalGroups.length > 0) {
-      const externalGroupsJson = JSON.stringify(externalGroups);
-      const prevExternalGroupsJson = JSON.stringify(prevExternalGroupsRef.current);
-      
-      if (externalGroupsJson !== prevExternalGroupsJson) {
-        setGroups(externalGroups);
-        prevExternalGroupsRef.current = externalGroups;
-      }
-    }
-  }, [externalGroups]);
-
-  // Handle incoming external active group ID changes
-  useEffect(() => {
-    if (externalActiveGroupId && externalActiveGroupId !== prevExternalActiveGroupIdRef.current) {
-      if (externalActiveGroupId !== activeGroupId) {
-        setActiveGroupId(externalActiveGroupId);
-      }
-      prevExternalActiveGroupIdRef.current = externalActiveGroupId;
-    }
-  }, [externalActiveGroupId, activeGroupId]);
-
-  // Handle outgoing groups updates (child to parent sync)
-  useEffect(() => {
-    if (setExternalGroups && groups.length > 0) {
-      const groupsJson = JSON.stringify(groups);
-      const externalGroupsJson = JSON.stringify(externalGroups);
-      
-      if (externalGroupsJson !== groupsJson) {
-      setExternalGroups([...groups]);
-      }
-    }
-  }, [groups, setExternalGroups, externalGroups]);
-
-  // Handle outgoing active group ID updates
+  // Get active group
+  const activeGroup = groups.find(g => g.id === activeGroupId) || groups[0] || {};
   useEffect(() => {
     if (setExternalActiveGroupId && activeGroupId) {
       if (activeGroupId !== externalActiveGroupId) {
