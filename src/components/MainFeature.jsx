@@ -108,7 +108,8 @@ const MainFeature = ({ externalGroups, setExternalGroups, externalActiveGroupId,
     startDate: '',
     endDate: '',
     category: '',
-    searchTerm: ''
+    searchTerm: '',
+    paidBy: ''
   });
   const [balances, setBalances] = useState(initialBalances);
 
@@ -138,11 +139,6 @@ const MainFeature = ({ externalGroups, setExternalGroups, externalActiveGroupId,
       if (JSON.stringify(groups) !== JSON.stringify(externalGroups)) {
         setExternalGroups(groups);
       }
-    }
-  }, [groups, setExternalGroups, externalGroups]);
-  
-  
-  // Get expenses for active group with filters
   const groupExpenses = expenses.filter(e => {
     // Base filter - group membership
     if (e.groupId !== activeGroupId) return false;
@@ -154,8 +150,18 @@ const MainFeature = ({ externalGroups, setExternalGroups, externalActiveGroupId,
     // Category filter
     if (expenseFilters.category && e.category !== expenseFilters.category) return false;
     
+    // Paid by filter
+    if (expenseFilters.paidBy && e.paidBy !== expenseFilters.paidBy) return false;
+    
     // Search filter
     if (expenseFilters.searchTerm) {
+      const searchLower = expenseFilters.searchTerm.toLowerCase();
+      const expenseText = `${e.description} ${e.paidBy} ${e.category}`.toLowerCase();
+      if (!expenseText.includes(searchLower)) return false;
+    }
+    
+    return true;
+  });
       const searchLower = expenseFilters.searchTerm.toLowerCase();
       const expenseText = `${e.description} ${e.paidBy} ${e.category}`.toLowerCase();
       if (!expenseText.includes(searchLower)) return false;
@@ -352,14 +358,15 @@ const MainFeature = ({ externalGroups, setExternalGroups, externalActiveGroupId,
           }`}
           onClick={() => setView('expenses')}
         >
-          Expenses
-        </button>
-        <button
-          className={`px-4 py-2 font-medium text-sm ${
-            view === 'balances'
-              ? 'text-primary border-b-2 border-primary'
-              : 'text-surface-600 dark:text-surface-400 hover:text-surface-900 dark:hover:text-surface-100'
-          }`}
+            <FilterBar 
+              onFilterChange={handleExpenseFilterChange}
+              categories={uniqueCategories}
+              groupMembers={activeGroup.members || []}
+              activeFilters={expenseFilters}
+              showDateFilter={true}
+              showCategoryFilter={true}
+              showPaidByFilter={true}
+            />
           onClick={() => setView('balances')}
         >
           Balances & Settlements
@@ -480,8 +487,8 @@ const MainFeature = ({ externalGroups, setExternalGroups, externalActiveGroupId,
                         <option value="Entertainment">Entertainment</option>
                         <option value="Other">Other</option>
                       </select>
-                    </div>
                     
+                  <button onClick={() => setExpenseFilters({startDate: '', endDate: '', category: '', searchTerm: '', paidBy: ''})} className="text-primary mb-4">Clear all filters</button>
                     <div>
                       <label htmlFor="splitType" className="label">Split Type</label>
                       <select
