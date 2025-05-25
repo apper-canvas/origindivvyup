@@ -108,8 +108,7 @@ const MainFeature = ({ externalGroups, setExternalGroups, externalActiveGroupId,
     startDate: '',
     endDate: '',
     category: '',
-    searchTerm: '',
-    paidBy: ''
+    searchTerm: ''
   });
   const [balances, setBalances] = useState(initialBalances);
 
@@ -141,6 +140,13 @@ const MainFeature = ({ externalGroups, setExternalGroups, externalActiveGroupId,
       }
     }
   }, [groups, setExternalGroups, externalGroups]);
+  
+  
+  // Get expenses for active group with filters
+  const groupExpenses = expenses.filter(e => {
+    // Base filter - group membership
+    if (e.groupId !== activeGroupId) return false;
+    
     // Date filters
     if (expenseFilters.startDate && new Date(e.date) < new Date(expenseFilters.startDate)) return false;
     if (expenseFilters.endDate && new Date(e.date) > new Date(`${expenseFilters.endDate}T23:59:59`)) return false;
@@ -148,15 +154,8 @@ const MainFeature = ({ externalGroups, setExternalGroups, externalActiveGroupId,
     // Category filter
     if (expenseFilters.category && e.category !== expenseFilters.category) return false;
     
-    // Paid by filter
-    if (expenseFilters.paidBy && e.paidBy !== expenseFilters.paidBy) return false;
-    
     // Search filter
     if (expenseFilters.searchTerm) {
-      const searchLower = expenseFilters.searchTerm.toLowerCase();
-      const expenseText = `${e.description} ${e.paidBy} ${e.category}`.toLowerCase();
-      if (!expenseText.includes(searchLower)) return false;
-    }
       const searchLower = expenseFilters.searchTerm.toLowerCase();
       const expenseText = `${e.description} ${e.paidBy} ${e.category}`.toLowerCase();
       if (!expenseText.includes(searchLower)) return false;
@@ -359,16 +358,15 @@ const MainFeature = ({ externalGroups, setExternalGroups, externalActiveGroupId,
           className={`px-4 py-2 font-medium text-sm ${
             view === 'balances'
               ? 'text-primary border-b-2 border-primary'
-          {!showAddExpenseForm && (
-            <FilterBar 
-              onFilterChange={handleExpenseFilterChange}
-              categories={uniqueCategories}
-              members={activeGroup.members || []}
-              activeFilters={expenseFilters}
-              showDateFilter={true}
-              showCategoryFilter={true}
-            />
-          )}
+              : 'text-surface-600 dark:text-surface-400 hover:text-surface-900 dark:hover:text-surface-100'
+          }`}
+          onClick={() => setView('balances')}
+        >
+          Balances & Settlements
+        </button>
+      </div>
+      
+      {/* Expenses View */}
       {view === 'expenses' && (
         <>
           <div className="flex justify-between items-center mb-4">
@@ -488,8 +486,8 @@ const MainFeature = ({ externalGroups, setExternalGroups, externalActiveGroupId,
                       <label htmlFor="splitType" className="label">Split Type</label>
                       <select
                         id="splitType"
+                        name="splitType"
                         className="input"
-                  <button onClick={() => setExpenseFilters({startDate: '', endDate: '', category: '', searchTerm: '', paidBy: ''})} className="text-primary mb-4">Clear all filters</button>
                         value={newExpense.splitType}
                         onChange={handleInputChange}
                       >
