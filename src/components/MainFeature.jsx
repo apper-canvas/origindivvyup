@@ -7,7 +7,7 @@ import FilterBar from './FilterBar';
 
 // Sample data for demo purposes
 const initialGroups = [
-  { id: 'g1', name: 'Roommates', description: 'Apartment expenses', members: ['John', 'Sara', 'Miguel'] },
+  { id: 'g1', name: 'Roommates', description: 'Apartment expenses', members: ['John', 'Sara', 'Miguel', 'Tom'] },
   { id: 'g2', name: 'Trip to Paris', description: 'Summer vacation', members: ['John', 'Lisa', 'Tom', 'Emily'] },
 ];
 
