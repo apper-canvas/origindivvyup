@@ -8,6 +8,8 @@ const FilterBar = ({
   categories = [], 
   showDateFilter = true,
   showCategoryFilter = true,
+  members = [],
+
   showSearchFilter = true,
   activeFilters = {} 
 }) => {
@@ -17,7 +19,9 @@ const FilterBar = ({
     endDate: activeFilters.endDate || '',
     category: activeFilters.category || '',
     searchTerm: activeFilters.searchTerm || '',
+    paidBy: activeFilters.paidBy || '',
   });
+
 
   const handleFilterChange = (name, value) => {
     const updatedFilters = { ...localFilters, [name]: value };
@@ -37,10 +41,12 @@ const FilterBar = ({
       endDate: '',
       category: '',
       searchTerm: '',
+      paidBy: '',
     };
     setLocalFilters(clearedFilters);
     onFilterChange(clearedFilters);
   };
+
 
   // Check if any filters are active
   const hasActiveFilters = Object.values(localFilters).some(value => value !== '');
@@ -102,7 +108,17 @@ const FilterBar = ({
                 <ApperIcon name="X" className="h-3 w-3" />
               </button>
             </div>
+
+            </div>
+          {localFilters.paidBy && (
+            <div className="flex items-center gap-1 px-2 py-1 text-xs bg-surface-100 dark:bg-surface-800 rounded-full">
+              <span>Paid by: {localFilters.paidBy}</span>
+              <button onClick={() => clearFilter('paidBy')} className="text-surface-500 hover:text-surface-700">
+                <ApperIcon name="X" className="h-3 w-3" />
+              </button>
+            </div>
           )}
+
         </div>
       )}
 
@@ -139,9 +155,23 @@ const FilterBar = ({
                     ))}
                   </select>
                 </div>
+
+                </div>
+              {members.length > 0 && (
+                <div>
+                  <label htmlFor="paidBy" className="label">Paid By</label>
+                  <select id="paidBy" value={localFilters.paidBy} onChange={(e) => handleFilterChange('paidBy', e.target.value)} className="input">
+                    <option value="">Anyone</option>
+                    {members.map((member, index) => (
+                      <option key={index} value={member}>{member}</option>
+                    ))}
+                  </select>
+                </div>
               )}
+
               {showSearchFilter && (
-                <div className={`${(showDateFilter || (showCategoryFilter && categories.length > 0)) ? 'md:col-span-3' : ''}`}>
+                <div className={`${(showDateFilter || (showCategoryFilter && categories.length > 0) || members.length > 0) ? 'md:col-span-3' : ''}`}>
+
                   <label htmlFor="searchTerm" className="label">Search</label>
                   <div className="relative">
                     <input 
