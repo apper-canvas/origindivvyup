@@ -108,7 +108,8 @@ const MainFeature = ({ externalGroups, setExternalGroups, externalActiveGroupId,
     startDate: '',
     endDate: '',
     category: '',
-    searchTerm: ''
+    searchTerm: '',
+    paidBy: ''
   });
   const [balances, setBalances] = useState(initialBalances);
 
@@ -153,6 +154,9 @@ const MainFeature = ({ externalGroups, setExternalGroups, externalActiveGroupId,
     
     // Category filter
     if (expenseFilters.category && e.category !== expenseFilters.category) return false;
+    
+    // Paid by filter
+    if (expenseFilters.paidBy && e.paidBy !== expenseFilters.paidBy) return false;
     
     // Search filter
     if (expenseFilters.searchTerm) {
@@ -381,13 +385,16 @@ const MainFeature = ({ externalGroups, setExternalGroups, externalActiveGroupId,
           </div>
 
           {/* Add Expense Form */}
+          {/* Add Expense Form */}
           {!showAddExpenseForm && (
             <FilterBar 
               onFilterChange={handleExpenseFilterChange}
               categories={uniqueCategories}
+              members={activeGroup.members || []}
               activeFilters={expenseFilters}
               showDateFilter={true}
               showCategoryFilter={true}
+              showPaidByFilter={true}
             />
           )}
           <AnimatePresence>
@@ -519,7 +526,6 @@ const MainFeature = ({ externalGroups, setExternalGroups, externalActiveGroupId,
                   }
                 </h3>
                 {hasActiveFilters && (
-                  <button onClick={() => setExpenseFilters({startDate: '', endDate: '', category: '', searchTerm: ''})} className="text-primary mb-4">Clear all filters</button>
                 )}
                 <p className="text-surface-500 dark:text-surface-400 mb-4">
                   Add your first expense to start tracking
