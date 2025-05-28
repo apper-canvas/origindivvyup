@@ -6,9 +6,11 @@ import { format } from 'date-fns';
 const FilterBar = ({ 
   onFilterChange, 
   categories = [], 
+  members = [],
   showDateFilter = true,
   showCategoryFilter = true,
   showSearchFilter = true,
+  showPaidByFilter = false,
   activeFilters = {} 
 }) => {
   const [isExpanded, setIsExpanded] = useState(false);
@@ -17,6 +19,7 @@ const FilterBar = ({
     endDate: activeFilters.endDate || '',
     category: activeFilters.category || '',
     searchTerm: activeFilters.searchTerm || '',
+    paidBy: activeFilters.paidBy || '',
   });
 
   const handleFilterChange = (name, value) => {
@@ -37,6 +40,7 @@ const FilterBar = ({
       endDate: '',
       category: '',
       searchTerm: '',
+      paidBy: '',
     };
     setLocalFilters(clearedFilters);
     onFilterChange(clearedFilters);
@@ -103,6 +107,16 @@ const FilterBar = ({
               </button>
             </div>
           )}
+
+          {localFilters.paidBy && (
+            <div className="flex items-center gap-1 px-2 py-1 text-xs bg-surface-100 dark:bg-surface-800 rounded-full">
+              <span>Paid by: {localFilters.paidBy}</span>
+              <button onClick={() => clearFilter('paidBy')} className="text-surface-500 hover:text-surface-700">
+                <ApperIcon name="X" className="h-3 w-3" />
+              </button>
+            </div>
+          )}
+
         </div>
       )}
 
@@ -138,10 +152,23 @@ const FilterBar = ({
                       <option key={index} value={category}>{category}</option>
                     ))}
                   </select>
+              )}
+
+                </div>
+              {showPaidByFilter && members.length > 0 && (
+                <div>
+                  <label htmlFor="paidBy" className="label">Paid By</label>
+                  <select id="paidBy" value={localFilters.paidBy} onChange={(e) => handleFilterChange('paidBy', e.target.value)} className="input">
+                    <option value="">All Members</option>
+                    {members.map((member, index) => (
+                      <option key={index} value={member}>{member}</option>
+                    ))}
+                  </select>
                 </div>
               )}
+
               {showSearchFilter && (
-                <div className={`${(showDateFilter || (showCategoryFilter && categories.length > 0)) ? 'md:col-span-3' : ''}`}>
+                <div className={`${(showDateFilter || (showCategoryFilter && categories.length > 0) || (showPaidByFilter && members.length > 0)) ? 'md:col-span-3' : ''}`}>
                   <label htmlFor="searchTerm" className="label">Search</label>
                   <div className="relative">
                     <input 
